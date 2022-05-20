@@ -88,6 +88,18 @@ class MinioTemplate(
         }
     }
 
+    fun uploadSnowballObjects(
+        snowballObject: List<SnowballObject>,
+        bucket: String = defaultBucket,
+    ): ObjectWriteResponse {
+        return minioClient.uploadSnowballObjects(
+            UploadSnowballObjectsArgs.builder()
+                .bucket(bucket)
+                .objects(snowballObject)
+                .build()
+        )
+    }
+
     fun getObject(path: String, bucket: String = defaultBucket): GetObjectResponse {
         return minioClient.getObject(
             GetObjectArgs.builder()
@@ -95,6 +107,17 @@ class MinioTemplate(
                 .`object`(path)
                 .build()
         )!!
+    }
+
+    fun downloadObject(path: String, dest: File, overwrite: Boolean = false, bucket: String = defaultBucket) {
+        minioClient.downloadObject(
+            DownloadObjectArgs.builder()
+                .bucket(bucket)
+                .`object`(path)
+                .overwrite(overwrite)
+                .filename(dest.absolutePath)
+                .build()
+        )
     }
 
     fun removeObject(path: String, bucket: String = defaultBucket) {
