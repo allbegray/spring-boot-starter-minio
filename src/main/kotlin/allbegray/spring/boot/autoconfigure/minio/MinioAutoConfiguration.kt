@@ -13,7 +13,7 @@ import org.springframework.context.annotation.Configuration
 @Configuration
 @ConditionalOnClass(MinioClient::class)
 @EnableConfigurationProperties(MinioProperties::class)
-open class MinioAutoConfiguration(val minioProperties: MinioProperties) {
+open class MinioAutoConfiguration(private val minioProperties: MinioProperties) {
 
     @Bean
     @ConditionalOnMissingBean(OkHttpClient::class)
