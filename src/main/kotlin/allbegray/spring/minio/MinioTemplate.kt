@@ -31,133 +31,52 @@ class MinioTemplate(
     }
 
     fun statObject(path: String, bucket: String = defaultBucket): StatObjectResponse {
-        return minioClient.statObject(
-            StatObjectArgs.builder()
-                .bucket(bucket)
-                .`object`(path)
-                .build()
-        )
+        return minioClient.statObject(StatObjectArgs.builder().bucket(bucket).`object`(path).build())
     }
 
-    fun putObject(
-        path: String,
-        text: String,
-        partSize: Long = 0,
-        bucket: String = defaultBucket,
-    ): ObjectWriteResponse {
+    // @formatter:off
+    fun putObject(path: String, text: String, partSize: Long = 0, bucket: String = defaultBucket): ObjectWriteResponse {
         val bytea = text.toByteArray()
-        return putObject(
-            path,
-            ByteArrayInputStream(bytea),
-            bytea.size.toLong(),
-            partSize,
-            bucket,
-        )
+        return putObject(path, ByteArrayInputStream(bytea), bytea.size.toLong(), partSize, bucket,)
     }
 
-    fun putObject(
-        path: String,
-        file: File,
-        partSize: Long = 0,
-        bucket: String = defaultBucket,
-    ): ObjectWriteResponse {
-        return putObject(
-            path,
-            file.inputStream(),
-            file.length(),
-            partSize,
-            bucket,
-        )
+    fun putObject(path: String, file: File, partSize: Long = 0, bucket: String = defaultBucket): ObjectWriteResponse {
+        return putObject(path, file.inputStream(), file.length(), partSize, bucket,)
     }
 
-    fun putObject(
-        path: String,
-        `is`: InputStream,
-        objectSize: Long,
-        partSize: Long = 0,
-        bucket: String = defaultBucket,
-    ): ObjectWriteResponse {
+    fun putObject(path: String, `is`: InputStream, objectSize: Long, partSize: Long = 0, bucket: String = defaultBucket): ObjectWriteResponse {
         return `is`.use {
-            minioClient.putObject(
-                PutObjectArgs.builder()
-                    .stream(it, objectSize, partSize)
-                    .bucket(bucket)
-                    .`object`(path)
-                    .build()
-            )!!
+            minioClient.putObject(PutObjectArgs.builder().stream(it, objectSize, partSize).bucket(bucket).`object`(path).build())!!
         }
     }
 
-    fun uploadSnowballObjects(
-        snowballObject: List<SnowballObject>,
-        bucket: String = defaultBucket,
-    ): ObjectWriteResponse {
-        return minioClient.uploadSnowballObjects(
-            UploadSnowballObjectsArgs.builder()
-                .bucket(bucket)
-                .objects(snowballObject)
-                .build()
-        )
+    fun uploadSnowballObjects(snowballObject: List<SnowballObject>, bucket: String = defaultBucket): ObjectWriteResponse {
+        return minioClient.uploadSnowballObjects(UploadSnowballObjectsArgs.builder().bucket(bucket).objects(snowballObject).build())
     }
 
     fun getObject(path: String, bucket: String = defaultBucket): GetObjectResponse {
-        return minioClient.getObject(
-            GetObjectArgs.builder()
-                .bucket(bucket)
-                .`object`(path)
-                .build()
-        )!!
+        return minioClient.getObject(GetObjectArgs.builder().bucket(bucket).`object`(path).build())!!
     }
 
     fun downloadObject(path: String, dest: File, overwrite: Boolean = false, bucket: String = defaultBucket) {
-        minioClient.downloadObject(
-            DownloadObjectArgs.builder()
-                .bucket(bucket)
-                .`object`(path)
-                .overwrite(overwrite)
-                .filename(dest.absolutePath)
-                .build()
-        )
+        minioClient.downloadObject(DownloadObjectArgs.builder().bucket(bucket).`object`(path).overwrite(overwrite).filename(dest.absolutePath).build())
     }
 
     fun removeObject(path: String, bucket: String = defaultBucket) {
-        return minioClient.removeObject(
-            RemoveObjectArgs.builder()
-                .bucket(bucket)
-                .`object`(path)
-                .build()
-        )
+        return minioClient.removeObject(RemoveObjectArgs.builder().bucket(bucket).`object`(path).build())
     }
 
-    fun removeObjects(
-        deleteObjects: List<DeleteObject>,
-        bucket: String = defaultBucket
-    ): Sequence<DeleteError> {
-        return minioClient.removeObjects(
-            RemoveObjectsArgs.builder()
-                .bucket(bucket)
-                .objects(deleteObjects)
-                .build()
-        ).asSequence().map { it.get() }
+    fun removeObjects(deleteObjects: List<DeleteObject>, bucket: String = defaultBucket): Sequence<DeleteError> {
+        return minioClient.removeObjects(RemoveObjectsArgs.builder().bucket(bucket).objects(deleteObjects).build()).asSequence().map { it.get() }
     }
 
-    fun listObjects(
-        prefix: String,
-        recursive: Boolean = false,
-        bucket: String = defaultBucket,
-    ): Sequence<Item> {
-        val listObjects = minioClient.listObjects(
-            ListObjectsArgs.builder()
-                .bucket(bucket)
-                .prefix(prefix)
-                .recursive(recursive)
-                .build()
-        )
-        return listObjects.asSequence().map { it.get() }
+    fun listObjects(prefix: String, recursive: Boolean = false, bucket: String = defaultBucket): Sequence<Item> {
+        return minioClient.listObjects(ListObjectsArgs.builder().bucket(bucket).prefix(prefix).recursive(recursive).build()).asSequence().map { it.get() }
     }
 
     fun makeDir(path: String, bucket: String = defaultBucket): ObjectWriteResponse {
         val fixed = if (path.endsWith("/").not()) "$path/" else path
         return putObject(fixed, ByteArrayInputStream(ByteArray(0)), 0, bucket = bucket)
     }
+    // @formatter:on
 }
