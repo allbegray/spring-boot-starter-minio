@@ -1,0 +1,75 @@
+package allbegray.spring.boot.autoconfigure.minio
+
+import allbegray.spring.minio.annotation.MinioListener
+import io.minio.ListenBucketNotificationArgs
+import io.minio.MinioClient
+import org.springframework.beans.factory.DisposableBean
+import org.springframework.beans.factory.InitializingBean
+import org.springframework.boot.autoconfigure.AutoConfigureAfter
+import org.springframework.context.ApplicationContext
+import org.springframework.context.ApplicationContextAware
+import org.springframework.context.annotation.Configuration
+import org.springframework.stereotype.Component
+import org.springframework.stereotype.Service
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
+
+@Configuration
+@AutoConfigureAfter(MinioAutoConfiguration::class)
+open class MinioListenerConfiguration(
+    val minioClient: MinioClient,
+    val minioProperties: MinioProperties,
+) : ApplicationContextAware, InitializingBean, DisposableBean  {
+
+    lateinit var ctx: ApplicationContext
+    lateinit var newFixedThreadPool:ExecutorService
+
+    override fun afterPropertiesSet() {
+        val targets = listOf(Service::class.java, Component::class.java)
+            .flatMap { ctx.getBeansWithAnnotation(it).values }
+            .toSet()
+            .flatMap { bean ->
+                bean.javaClass.declaredMethods
+                    .map { method ->
+                        if (method.isAnnotationPresent(MinioListener::class.java)) {
+                            bean to method
+                        } else {
+                            null
+                        }
+                    }
+            }
+            .filterNotNull()
+
+        newFixedThreadPool = Executors.newFixedThreadPool(targets.size)
+
+        for ((bean, method) in targets) {
+            val minioListener = method.getAnnotation(MinioListener::class.java)
+
+            newFixedThreadPool.submit {
+                val listenBucketNotification = minioClient.listenBucketNotification(
+                    ListenBucketNotificationArgs.builder()
+                        .bucket(minioListener.bucket.ifEmpty { minioProperties.defaultBucket })
+                        .prefix(minioListener.prefix)
+                        .suffix(minioListener.suffix)
+                        .events(minioListener.value)
+                        .build()
+                )
+
+                listenBucketNotification.use { itr ->
+                    itr.forEachRemaining {
+                        val events = it.get().events()
+                        for (event in events) {
+                            method.invoke(bean, event)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    override fun setApplicationContext(applicationContext: ApplicationContext) {
+        this.ctx = applicationContext
+    }
+
+    override fun destroy() = newFixedThreadPool.shutdown()
+}

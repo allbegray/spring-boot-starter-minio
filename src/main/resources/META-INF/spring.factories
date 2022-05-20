@@ -1,0 +1,3 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+  allbegray.spring.boot.autoconfigure.minio.MinioAutoConfiguration,\
+  allbegray.spring.boot.autoconfigure.minio.MinioListenerConfiguration
