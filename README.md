@@ -1,5 +1,5 @@
 # spring-boot-starter-minio
-spring boot minio
+spring boot minio for kotlin
 
 ## How to
 https://jitpack.io/#allbegray/spring-boot-starter-minio

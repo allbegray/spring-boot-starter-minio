@@ -26,7 +26,7 @@ class MinioTemplate(
         return minioClient.removeBucket(RemoveBucketArgs.builder().bucket(name).build())
     }
 
-    fun getBucketVersioning(bucket: String): VersioningConfiguration {
+    fun getBucketVersioning(bucket: String = defaultBucket): VersioningConfiguration {
         return minioClient.getBucketVersioning(GetBucketVersioningArgs.builder().bucket(bucket).build())
     }
 
@@ -109,16 +109,20 @@ class MinioTemplate(
     fun removeObjects(
         deleteObjects: List<DeleteObject>,
         bucket: String = defaultBucket
-    ): Iterable<Result<DeleteError>> {
+    ): Sequence<DeleteError> {
         return minioClient.removeObjects(
             RemoveObjectsArgs.builder()
                 .bucket(bucket)
                 .objects(deleteObjects)
                 .build()
-        )
+        ).asSequence().map { it.get() }
     }
 
-    fun listObjects(prefix: String, recursive: Boolean = false, bucket: String = defaultBucket): Sequence<Item> {
+    fun listObjects(
+        prefix: String,
+        recursive: Boolean = false,
+        bucket: String = defaultBucket,
+    ): Sequence<Item> {
         val listObjects = minioClient.listObjects(
             ListObjectsArgs.builder()
                 .bucket(bucket)
