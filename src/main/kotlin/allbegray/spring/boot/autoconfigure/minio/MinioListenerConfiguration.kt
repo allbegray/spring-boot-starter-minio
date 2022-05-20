@@ -17,8 +17,8 @@ import java.util.concurrent.Executors
 @Configuration
 @AutoConfigureAfter(MinioAutoConfiguration::class)
 open class MinioListenerConfiguration(
-    val minioClient: MinioClient,
-    val minioProperties: MinioProperties,
+    private val minioClient: MinioClient,
+    private val minioProperties: MinioProperties,
 ) : ApplicationContextAware, SmartInitializingSingleton, DisposableBean {
 
     lateinit var ctx: ApplicationContext
