@@ -4,3 +4,4 @@ spring:
     access-key: Q3AM3UQ867SPQQA43P2F
     secret-key: zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG
     default-bucket: ${random.uuid}
+    create-bucket: true

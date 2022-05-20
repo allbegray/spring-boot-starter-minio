@@ -10,5 +10,5 @@ class MinioProperties(
     val accessKey: String,
     val secretKey: String,
     val defaultBucket: String = "",
-    val threadPool: Int = 1,
+    val createBucket: Boolean = false,
 )

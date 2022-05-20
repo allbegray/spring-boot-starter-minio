@@ -1,6 +1,8 @@
 package allbegray.spring.boot.autoconfigure.minio
 
 import allbegray.spring.minio.MinioTemplate
+import io.minio.BucketExistsArgs
+import io.minio.MakeBucketArgs
 import io.minio.MinioClient
 import okhttp3.OkHttpClient
 import org.springframework.beans.factory.ObjectProvider
@@ -25,13 +27,22 @@ open class MinioAutoConfiguration(private val minioProperties: MinioProperties) 
         okHttpClient: OkHttpClient,
         configurationCustomizers: ObjectProvider<MinioClientBuilderCustomizer>,
     ): MinioClient {
-        return MinioClient.builder()
+        val minioClient = MinioClient.builder()
             .endpoint(minioProperties.url)
             .credentials(minioProperties.accessKey, minioProperties.secretKey)
             .also { builder ->
                 configurationCustomizers.forEach { it.customize(builder) }
             }
             .build()!!
+
+        if (minioProperties.createBucket) {
+            val bucket = minioProperties.defaultBucket
+            if (minioClient.bucketExists(BucketExistsArgs.builder().bucket(bucket).build()).not()) {
+                minioClient.makeBucket(MakeBucketArgs.builder().bucket(bucket).build())
+            }
+        }
+
+        return minioClient
     }
 
     @Bean
