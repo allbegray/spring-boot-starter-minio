@@ -19,10 +19,10 @@ import java.util.concurrent.Executors
 open class MinioListenerConfiguration(
     val minioClient: MinioClient,
     val minioProperties: MinioProperties,
-) : ApplicationContextAware, InitializingBean, DisposableBean  {
+) : ApplicationContextAware, InitializingBean, DisposableBean {
 
     lateinit var ctx: ApplicationContext
-    lateinit var newFixedThreadPool:ExecutorService
+    private var newFixedThreadPool: ExecutorService? = null
 
     override fun afterPropertiesSet() {
         val targets = listOf(Service::class.java, Component::class.java)
@@ -40,17 +40,19 @@ open class MinioListenerConfiguration(
             }
             .filterNotNull()
 
+        if (targets.isEmpty()) return
+
         newFixedThreadPool = Executors.newFixedThreadPool(targets.size)
 
         for ((bean, method) in targets) {
             val minioListener = method.getAnnotation(MinioListener::class.java)
 
-            newFixedThreadPool.submit {
+            newFixedThreadPool!!.submit {
                 val listenBucketNotification = minioClient.listenBucketNotification(
                     ListenBucketNotificationArgs.builder()
                         .bucket(minioListener.bucket.ifEmpty { minioProperties.defaultBucket })
-                        .prefix(minioListener.prefix)
-                        .suffix(minioListener.suffix)
+                        .prefix(minioListener.prefix.ifEmpty { null })
+                        .suffix(minioListener.suffix.ifEmpty { null })
                         .events(minioListener.value)
                         .build()
                 )
@@ -71,5 +73,7 @@ open class MinioListenerConfiguration(
         this.ctx = applicationContext
     }
 
-    override fun destroy() = newFixedThreadPool.shutdown()
+    override fun destroy() {
+        newFixedThreadPool?.shutdown()
+    }
 }
