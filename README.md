@@ -15,6 +15,6 @@ repositories {
 #### Step 2. Add the dependency
 ```
 dependencies {
-    implementation 'com.github.allbegray:spring-boot-starter-minio:0.0.2'
+    implementation 'com.github.allbegray:spring-boot-starter-minio:0.0.3'
 }
 ```
