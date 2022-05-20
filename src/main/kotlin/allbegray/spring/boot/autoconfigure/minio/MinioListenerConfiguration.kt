@@ -4,7 +4,7 @@ import allbegray.spring.minio.annotation.MinioListener
 import io.minio.ListenBucketNotificationArgs
 import io.minio.MinioClient
 import org.springframework.beans.factory.DisposableBean
-import org.springframework.beans.factory.InitializingBean
+import org.springframework.beans.factory.SmartInitializingSingleton
 import org.springframework.boot.autoconfigure.AutoConfigureAfter
 import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextAware
@@ -19,12 +19,12 @@ import java.util.concurrent.Executors
 open class MinioListenerConfiguration(
     val minioClient: MinioClient,
     val minioProperties: MinioProperties,
-) : ApplicationContextAware, InitializingBean, DisposableBean {
+) : ApplicationContextAware, SmartInitializingSingleton, DisposableBean {
 
     lateinit var ctx: ApplicationContext
     private var newFixedThreadPool: ExecutorService? = null
 
-    override fun afterPropertiesSet() {
+    override fun afterSingletonsInstantiated() {
         val targets = listOf(Service::class.java, Component::class.java)
             .flatMap { ctx.getBeansWithAnnotation(it).values }
             .toSet()
