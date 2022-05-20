@@ -1,6 +1,6 @@
 package allbegray.spring.minio
 
-object EventType {
+object MinioEventType {
     // Supported Object Event Types
     const val OBJECT_CREATED_PUT = "s3:ObjectCreated:Put"
     const val OBJECT_CREATED_POST = "s3:ObjectCreated:Post"

@@ -3,7 +3,7 @@ package allbegray.spring
 import allbegray.spring.boot.autoconfigure.minio.MinioAutoConfiguration
 import allbegray.spring.boot.autoconfigure.minio.MinioListenerConfiguration
 import allbegray.spring.boot.autoconfigure.minio.MinioProperties
-import allbegray.spring.minio.EventType
+import allbegray.spring.minio.MinioEventType
 import allbegray.spring.minio.MinioTemplate
 import allbegray.spring.minio.annotation.MinioListener
 import io.minio.messages.Event
@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component
 @Component
 class TestMinioListener {
 
-    @MinioListener(EventType.OBJECT_CREATED_PUT, "s3:ObjectCreated:Post")
+    @MinioListener(MinioEventType.OBJECT_CREATED_PUT, "s3:ObjectCreated:Post")
     fun putOrPostEvent(event: Event) {
         println("putOrPostEvent : $event")
     }

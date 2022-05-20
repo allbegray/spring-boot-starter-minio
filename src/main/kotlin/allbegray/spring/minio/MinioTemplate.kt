@@ -1,8 +1,7 @@
 package allbegray.spring.minio
 
 import io.minio.*
-import io.minio.messages.Bucket
-import io.minio.messages.Item
+import io.minio.messages.*
 import java.io.ByteArrayInputStream
 import java.io.File
 import java.io.InputStream
@@ -25,6 +24,19 @@ class MinioTemplate(
 
     fun removeBucket(name: String) {
         return minioClient.removeBucket(RemoveBucketArgs.builder().bucket(name).build())
+    }
+
+    fun getBucketVersioning(bucket: String): VersioningConfiguration {
+        return minioClient.getBucketVersioning(GetBucketVersioningArgs.builder().bucket(bucket).build())
+    }
+
+    fun statObject(path: String, bucket: String = defaultBucket): StatObjectResponse {
+        return minioClient.statObject(
+            StatObjectArgs.builder()
+                .bucket(bucket)
+                .`object`(path)
+                .build()
+        )
     }
 
     fun putObject(
@@ -90,6 +102,18 @@ class MinioTemplate(
             RemoveObjectArgs.builder()
                 .bucket(bucket)
                 .`object`(path)
+                .build()
+        )
+    }
+
+    fun removeObjects(
+        deleteObjects: List<DeleteObject>,
+        bucket: String = defaultBucket
+    ): Iterable<Result<DeleteError>> {
+        return minioClient.removeObjects(
+            RemoveObjectsArgs.builder()
+                .bucket(bucket)
+                .objects(deleteObjects)
                 .build()
         )
     }

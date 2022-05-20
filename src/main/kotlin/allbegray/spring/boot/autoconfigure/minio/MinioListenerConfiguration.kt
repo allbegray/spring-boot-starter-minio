@@ -51,8 +51,8 @@ open class MinioListenerConfiguration(
                 val listenBucketNotification = minioClient.listenBucketNotification(
                     ListenBucketNotificationArgs.builder()
                         .bucket(minioListener.bucket.ifEmpty { minioProperties.defaultBucket })
-                        .prefix(minioListener.prefix.ifEmpty { null })
-                        .suffix(minioListener.suffix.ifEmpty { null })
+                        .prefix(minioListener.prefix)
+                        .suffix(minioListener.suffix)
                         .events(minioListener.value)
                         .build()
                 )
